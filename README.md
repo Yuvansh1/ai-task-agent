@@ -4,6 +4,10 @@ Type a task in plain English. The agent figures out what to do and shows you eve
 
 Built with FastAPI + Streamlit (only using Python)
 
+## 🎥 Demo Video
+
+[![Watch the demo](https://img.youtube.com/vi/xD1oXjy0tow/maxresdefault.jpg)](https://youtu.be/xD1oXjy0tow?si=r8auv_9ysQFhUcIM)
+
 ---
 
 ## How it works
