@@ -1,0 +1,14 @@
+{
+  "task": "weather in Tokyo",
+  "tool_used": "WeatherMockTool",
+  "execution_time_ms": 1549.31,
+  "steps": [
+    "Received task: \"weather in Tokyo\"",
+    "Single-step task \u2014 selecting best tool...",
+    "Selected tool: WeatherMockTool (confidence 50%)",
+    "Executing WeatherMockTool...",
+    "Result: Weather for Tokyo: Sunny, 18\u00b0C, Humidity 55%, Wind 8 km/h E  *(mock data)*",
+    "Returning result to user"
+  ],
+  "output": "Weather for Tokyo: Sunny, 18\u00b0C, Humidity 55%, Wind 8 km/h E  *(mock data)*"
+}
