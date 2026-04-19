@@ -282,7 +282,8 @@ function headers() {
 }
 
 function setQ(btn) {
-  document.getElementById('task-input').value = btn.textContent.trim();
+  document.getElementById('task-input').value = btn.innerText.trim();
+  document.getElementById('task-input').focus();
 }
 
 function switchTab(name, btn) {
