@@ -1,0 +1,24 @@
+# Docker files not needed on Vercel
+Dockerfile.frontend
+docker-compose.yml
+backend/Dockerfile
+
+# MLflow data (read-only filesystem, not used on Vercel)
+backend/mlruns/
+backend/mlflow.db
+
+# Streamlit app replaced by built-in HTML UI
+streamlit_app.py
+
+# Test files
+tests/
+backend/tests/
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Git
+.git/
+.github/

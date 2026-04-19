@@ -1,0 +1,14 @@
+{
+  "task": "word count the quick brown fox",
+  "tool_used": "TextProcessorTool",
+  "execution_time_ms": 1538.76,
+  "steps": [
+    "Received task: \"word count the quick brown fox\"",
+    "Single-step task \u2014 selecting best tool...",
+    "Selected tool: TextProcessorTool (confidence 40%)",
+    "Executing TextProcessorTool...",
+    "Result: Word count: 4 words",
+    "Returning result to user"
+  ],
+  "output": "Word count: 4 words"
+}
