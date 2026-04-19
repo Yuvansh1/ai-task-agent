@@ -31,6 +31,32 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 
+# ---------------------------------------------------------------------------
+# Patch MLflow BEFORE importing agent — agent.py calls mlflow at import time
+# and Vercel's filesystem is read-only so mlflow.db write would crash everything
+# ---------------------------------------------------------------------------
+
+import sys as _sys
+
+class _NoOpMLflow:
+    """No-op mlflow shim — prevents any disk writes on Vercel."""
+    def __getattr__(self, name):
+        return self._noop
+    @staticmethod
+    def _noop(*args, **kwargs):
+        class _Ctx:
+            def __enter__(self): return self
+            def __exit__(self, *a): pass
+        return _Ctx()
+    def start_run(self, *a, **kw):
+        class _Ctx:
+            def __enter__(self): return self
+            def __exit__(self, *a): pass
+        return _Ctx()
+
+_sys.modules["mlflow"] = _NoOpMLflow()
+
+# Now safe to import agent and tools
 from agent import AgentController, AgentResult
 from tools import ALL_TOOLS, SentimentTool
 
@@ -71,39 +97,6 @@ class InMemoryStorage:
     def export_json(self) -> str:
         return json.dumps(self._data, indent=2)
 
-
-# ---------------------------------------------------------------------------
-# Patch MLflow out before agent.py tries to write to disk
-# ---------------------------------------------------------------------------
-
-import unittest.mock as _mock
-import sys as _sys
-
-class _NoOpMLflow:
-    """Swaps mlflow with a no-op so Vercel's read-only filesystem isn't touched."""
-    def __getattr__(self, name):
-        return self._noop
-
-    @staticmethod
-    def _noop(*args, **kwargs):
-        class _Ctx:
-            def __enter__(self): return self
-            def __exit__(self, *a): pass
-        return _Ctx()
-
-    def start_run(self, *a, **kw):
-        class _Ctx:
-            def __enter__(self): return self
-            def __exit__(self, *a): pass
-        return _Ctx()
-
-_sys.modules["mlflow"] = _NoOpMLflow()
-
-# Re-import agent now that mlflow is patched
-import importlib
-import agent as _agent_mod
-importlib.reload(_agent_mod)
-from agent import AgentController, AgentResult
 
 # ---------------------------------------------------------------------------
 # App setup
