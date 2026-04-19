@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Task Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0b0d14;--surface:#13161f;--surface2:#1c2030;--border:#252a3d;--border2:#2e3550;--accent:#6c63ff;--accent2:#5a52e0;--green:#10b981;--red:#ef4444;--text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;--font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column}
+#login-page{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .3s ease}
+.login-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:36px 32px}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .icon{font-size:36px;display:block;margin-bottom:8px}
+.login-logo h1{font-size:22px;font-weight:600}
+.login-logo p{font-size:13px;color:var(--muted2);margin-top:4px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--muted2);margin-bottom:6px}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--font);font-size:14px;outline:none;transition:border-color .15s}
+.field input:focus{border-color:var(--accent)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:40px}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px}
+.btn-primary{width:100%;background:var(--accent);border:none;border-radius:8px;padding:12px;color:#fff;font-size:15px;font-weight:500;cursor:pointer;transition:background .15s;margin-top:4px}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.login-err{background:#2d0a0a;border:1px solid #7f1d1d;color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.demo-box{margin-top:20px;background:var(--surface2);border-radius:10px;padding:14px 16px;border:1px solid var(--border)}
+.demo-box p{font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.demo-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px}
+.demo-row:last-child{margin-bottom:0}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-admin{background:#f59e0b}.dot-user{background:#10b981}
+.demo-cred{font-family:var(--mono);color:var(--muted2)}
+.demo-role{color:var(--muted);font-size:11px}
+.demo-btn{margin-left:auto;background:none;border:1px solid var(--border2);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--muted);cursor:pointer}
+.demo-btn:hover{border-color:var(--accent);color:var(--accent)}
+#app-page{flex:1;display:none;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:16px;font-weight:600;flex:1}
+.topbar-user{font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:8px}
+.role-badge{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.role-admin{background:#1c1507;color:#f59e0b;border:1px solid #854d0e}
+.role-user{background:#052e16;color:#34d399;border:1px solid #14532d}
+.btn-logout{background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+.main{flex:1;max-width:900px;width:100%;margin:0 auto;padding:28px 24px 60px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab{background:none;border:none;padding:10px 20px;color:var(--muted2);font-size:13px;font-family:var(--font);cursor:pointer;position:relative;margin-bottom:-1px}
+.tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .2s}
+.tab.active{color:var(--accent)}.tab.active::after{transform:scaleX(1)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:16px}
+.field-label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px}
+.task-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--font);font-size:14px;outline:none;transition:border-color .15s;margin-bottom:14px}
+.task-input:focus{border-color:var(--accent)}
+.quick-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.quick-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--muted2);font-size:12px;cursor:pointer}
+.quick-btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn-run{background:var(--accent);border:none;border-radius:8px;padding:11px 28px;color:#fff;font-size:14px;font-weight:500;cursor:pointer}
+.btn-run:hover{background:var(--accent2)}.btn-run:disabled{opacity:.45;cursor:not-allowed}
+.step{background:var(--surface2);border-radius:6px;padding:8px 12px;margin:4px 0;font-size:12px;color:var(--muted2);border-left:3px solid var(--accent);font-family:var(--mono);line-height:1.5}
+.step.live{border-left-color:var(--green);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.tool-badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:500;background:#1e1b4b;color:#a5b4fc;margin-bottom:10px;font-family:var(--mono)}
+.result-box{background:#080a12;border:1px solid var(--border2);border-left:4px solid var(--accent);border-radius:8px;padding:16px 18px;font-family:var(--mono);font-size:13px;color:var(--text);white-space:pre-wrap;word-break:break-word;line-height:1.6}
+.hist-item{border-bottom:1px solid var(--border);padding:14px 0}
+.hist-item:last-child{border-bottom:none}
+.hist-task{font-weight:500;font-size:14px;margin-bottom:4px}
+.hist-meta{font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap}
+.hist-tool{font-family:var(--mono);background:var(--surface2);padding:2px 8px;border-radius:4px;font-size:10px;color:var(--muted2)}
+.hist-output{font-family:var(--mono);font-size:12px;color:var(--muted2);background:var(--surface2);border-radius:6px;padding:10px 12px;white-space:pre-wrap;word-break:break-word}
+.alert-err{background:#2d0a0a;border:1px solid #7f1d1d;color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:40px 0}
+.hist-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;color:var(--muted2);cursor:pointer}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:#2d0a0a;border-color:#7f1d1d;color:#fca5a5}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="icon">&#9889;</span>
+      <h1>AI Task Agent</h1>
+      <p>Please sign in to continue</p>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <div class="field">
+      <label>Username</label>
+      <input id="un" placeholder="betty / yuvansh / roxana" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input id="pw" type="password" placeholder="Password" autocomplete="current-password"/>
+        <button class="pw-toggle" id="pw-toggle" type="button">&#128065;</button>
+      </div>
+    </div>
+    <button class="btn-primary" id="login-btn" type="button">Sign in</button>
+    <div class="demo-box">
+      <p>Demo accounts</p>
+      <div class="demo-row">
+        <span class="dot dot-admin"></span>
+        <span class="demo-cred">betty / betty@123</span>
+        <span class="demo-role">admin</span>
+        <button class="demo-btn" type="button" data-u="betty" data-p="betty@123">Use</button>
+      </div>
+      <div class="demo-row">
+        <span class="dot dot-user"></span>
+        <span class="demo-cred">yuvansh / yuvansh@321</span>
+        <span class="demo-role">user</span>
+        <button class="demo-btn" type="button" data-u="yuvansh" data-p="yuvansh@321">Use</button>
+      </div>
+      <div class="demo-row">
+        <span class="dot dot-user"></span>
+        <span class="demo-cred">roxana / roxana@456</span>
+        <span class="demo-role">user</span>
+        <button class="demo-btn" type="button" data-u="roxana" data-p="roxana@456">Use</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app-page">
+  <div class="topbar">
+    <span style="font-size:20px">&#9889;</span>
+    <span class="topbar-title">AI Task Agent</span>
+    <div class="topbar-user">
+      <span id="topbar-name"></span>
+      <span id="topbar-role" class="role-badge"></span>
+      <button class="btn-logout" id="logout-btn" type="button">Sign out</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="tabs">
+      <button class="tab active" type="button" data-tab="run">Run task</button>
+      <button class="tab" type="button" data-tab="history">History</button>
+    </div>
+    <div id="tab-run" class="panel active">
+      <div class="card">
+        <label class="field-label">Task</label>
+        <input id="task-input" class="task-input" placeholder="e.g. What is the weather in Tokyo?"/>
+        <div class="quick-btns">
+          <button class="quick-btn" type="button">Weather in Tokyo</button>
+          <button class="quick-btn" type="button">Calculate 25 * 48</button>
+          <button class="quick-btn" type="button">Uppercase the text hello world</button>
+          <button class="quick-btn" type="button">Weather in Paris and then analyze sentiment</button>
+          <button class="quick-btn" type="button">Word count the text The quick brown fox</button>
+        </div>
+        <button class="btn-run" id="run-btn" type="button">Run</button>
+      </div>
+      <div id="run-output" style="display:none">
+        <div class="card">
+          <div id="steps-area"></div>
+          <div id="result-area" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+    <div id="tab-history" class="panel">
+      <div class="hist-toolbar">
+        <button class="btn-sm" id="refresh-btn" type="button">&#8635; Refresh</button>
+        <button class="btn-sm btn-danger" id="clear-btn" type="button" style="display:none">Clear all tasks</button>
+      </div>
+      <div class="card" id="history-area"><p class="empty">Click Refresh to load history.</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _un = '', _pw = '', _role = '';
+
+function hdrs() {
+  return { 'Content-Type': 'application/json', 'x-username': _un, 'x-password': _pw };
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showErr(msg) {
+  var el = document.getElementById('login-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+document.getElementById('pw-toggle').addEventListener('click', function() {
+  var inp = document.getElementById('pw');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+});
+
+document.querySelectorAll('.demo-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.getElementById('un').value = btn.getAttribute('data-u');
+    document.getElementById('pw').value = btn.getAttribute('data-p');
+  });
+});
+
+document.getElementById('un').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('pw').focus();
+});
+document.getElementById('pw').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-btn').addEventListener('click', doLogin);
+
+async function doLogin() {
+  var un = document.getElementById('un').value.trim();
+  var pw = document.getElementById('pw').value.trim();
+  var btn = document.getElementById('login-btn');
+  document.getElementById('login-err').style.display = 'none';
+  if (!un || !pw) { showErr('Please enter username and password.'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  try {
+    var r = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: un, password: pw })
+    });
+    var d = await r.json();
+    if (r.ok) {
+      _un = un; _pw = pw; _role = d.role;
+      document.getElementById('topbar-name').textContent = un;
+      var rb = document.getElementById('topbar-role');
+      rb.textContent = d.role;
+      rb.className = 'role-badge ' + (d.role === 'admin' ? 'role-admin' : 'role-user');
+      document.getElementById('clear-btn').style.display = d.role === 'admin' ? '' : 'none';
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('app-page').style.display = 'flex';
+    } else {
+      showErr(d.detail || 'Invalid username or password.');
+    }
+  } catch(e) {
+    showErr('Connection error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+  }
+}
+
+document.getElementById('logout-btn').addEventListener('click', function() {
+  _un = ''; _pw = ''; _role = '';
+  document.getElementById('app-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('un').value = '';
+  document.getElementById('pw').value = '';
+  document.getElementById('login-err').style.display = 'none';
+  document.getElementById('run-output').style.display = 'none';
+  document.getElementById('steps-area').innerHTML = '';
+  document.getElementById('result-area').innerHTML = '';
+  document.getElementById('task-input').value = '';
+});
+
+document.querySelectorAll('.tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.getAttribute('data-tab')).classList.add('active');
+    if (tab.getAttribute('data-tab') === 'history') loadHistory();
+  });
+});
+
+document.querySelectorAll('.quick-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.getElementById('task-input').value = btn.textContent.trim();
+    document.getElementById('task-input').focus();
+  });
+});
+
+document.getElementById('task-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') runTask();
+});
+document.getElementById('run-btn').addEventListener('click', runTask);
+
+async function runTask() {
+  var task = document.getElementById('task-input').value.trim();
+  if (!task) return;
+  var btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  var output = document.getElementById('run-output');
+  var stepsArea = document.getElementById('steps-area');
+  var resultArea = document.getElementById('result-area');
+  output.style.display = 'block';
+  stepsArea.innerHTML = '';
+  resultArea.innerHTML = '';
+  try {
+    var res = await fetch('/tasks/stream', {
+      method: 'POST',
+      headers: hdrs(),
+      body: JSON.stringify({ task: task })
+    });
+    if (!res.ok) {
+      var err = await res.json().catch(function() { return {}; });
+      resultArea.innerHTML = '<div class="alert-err">Error ' + res.status + ': ' + esc(err.detail || 'Unknown error') + '</div>';
+      return;
+    }
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder();
+    var buf = '';
+    while (true) {
+      var chunk = await reader.read();
+      if (chunk.done) break;
+      buf += decoder.decode(chunk.value, { stream: true });
+      var parts = buf.split('\n\n');
+      buf = parts.pop();
+      for (var i = 0; i < parts.length; i++) {
+        var line = parts[i];
+        if (line.indexOf('data: ') !== 0) continue;
+        try {
+          var data = JSON.parse(line.slice(6));
+          if (data.done) {
+            stepsArea.querySelectorAll('.live').forEach(function(el) { el.classList.remove('live'); });
+            resultArea.innerHTML = '<div class="tool-badge">' + esc(data.tool_used || 'unknown') + '</div><div class="result-box">' + esc(data.output) + '</div>';
+          } else {
+            var div = document.createElement('div');
+            div.className = 'step live';
+            div.textContent = data.step;
+            stepsArea.appendChild(div);
+          }
+        } catch(e2) {}
+      }
+    }
+  } catch(e) {
+    resultArea.innerHTML = '<div class="alert-err">Request failed: ' + esc(e.message) + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run';
+  }
+}
+
+document.getElementById('refresh-btn').addEventListener('click', loadHistory);
+
+async function loadHistory() {
+  var area = document.getElementById('history-area');
+  area.innerHTML = '<p class="empty">Loading...</p>';
+  try {
+    var r = await fetch('/tasks', { headers: hdrs() });
+    if (!r.ok) {
+      var err = await r.json().catch(function() { return {}; });
+      area.innerHTML = '<div class="alert-err">' + esc(err.detail || 'Error') + '</div>';
+      return;
+    }
+    var tasks = await r.json();
+    if (!tasks.length) { area.innerHTML = '<p class="empty">No tasks yet.</p>'; return; }
+    var html = '';
+    for (var i = 0; i < tasks.length; i++) {
+      var t = tasks[i];
+      html += '<div class="hist-item"><div class="hist-task">' + esc(t.task) + '</div>';
+      html += '<div class="hist-meta"><span>' + esc(t.user) + '</span><span>' + (t.timestamp ? new Date(t.timestamp).toLocaleString() : '') + '</span><span class="hist-tool">' + esc(t.tool_used || '') + '</span></div>';
+      html += '<div class="hist-output">' + esc(t.output || '') + '</div></div>';
+    }
+    area.innerHTML = html;
+  } catch(e) {
+    area.innerHTML = '<div class="alert-err">' + esc(e.message) + '</div>';
+  }
+}
+
+document.getElementById('clear-btn').addEventListener('click', async function() {
+  if (!confirm('Clear all tasks?')) return;
+  try {
+    var r = await fetch('/tasks', { method: 'DELETE', headers: hdrs() });
+    if (r.ok) loadHistory();
+    else { var err = await r.json().catch(function(){return{};}); alert(err.detail || 'Failed'); }
+  } catch(e) { alert(e.message); }
+});
+</script>
+</body>
+</html>
